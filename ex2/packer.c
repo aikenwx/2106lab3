@@ -26,7 +26,7 @@ void packer_init(int balls_per_pack) {
         sem_init(&mutex_package_area->mutex, 0, 1);
         sem_init(&mutex_package_area->last_ball_arrived, 0, 0);
 
-        for (int i = 0; i < balls_per_pack; i++) {
+        for (int i = 0; i < balls_per_pack - 1; i++) {
           sem_init(&mutex_package_area->result_retrieved[i], 0, 0);
         }
     }
@@ -38,7 +38,7 @@ void packer_destroy(void) {
         sem_destroy(&mutex_package_area->mutex);
         sem_destroy(&mutex_package_area->last_ball_arrived);
 
-        for (int i = 0; i < mutex_package_area->balls_per_pack; i++) {
+        for (int i = 0; i < mutex_package_area->balls_per_pack - 1; i++) {
           sem_destroy(&mutex_package_area->result_retrieved[i]);
         }
     }
@@ -47,6 +47,7 @@ void packer_destroy(void) {
 void pack_ball(int colour, int id, int *other_ids) {
 
     // printf("Starting: colour: %i, id: %i", colour, id);
+    
     int colour_idx = colour - 1;
     package_t* mutex_package_area = &mutex_package_areas[colour_idx];
     // Write your code here.
@@ -74,7 +75,6 @@ void pack_ball(int colour, int id, int *other_ids) {
 
 
         sem_post(&mutex_package_area->result_retrieved[saved_current_id]);
-        sem_post(&mutex_package_area->last_ball_arrived);
 
     } else {
     // Record down the 2nd ball's ID
@@ -84,23 +84,23 @@ void pack_ball(int colour, int id, int *other_ids) {
     // Signal that the packing area is free
     // Return the 1st ball's id
         mutex_package_area->ball_ids[mutex_package_area->current_id] = id;
-        sem_post(&mutex_package_area->last_ball_arrived);
+
+        for (int i = 0; i < mutex_package_area->balls_per_pack - 1; i++) {
+            sem_post(&mutex_package_area->last_ball_arrived);
+        }
 
         for (int i = 0; i < mutex_package_area->current_id; i++) {
           other_ids[i] = mutex_package_area->ball_ids[i];
         }
 
-
         for (int i = 0; i < mutex_package_area->balls_per_pack -1; i++) {
           sem_wait(&mutex_package_area->result_retrieved[i]);
         }
         mutex_package_area->current_id = 0;
-        // for (let i = 0; i < mutex_package_area->balls_per_pack; i++) {
-        //   mutex_package_area->ball_ids[i] 
-        // }
-        // mutex_package_area->first_id = -1;
-        // mutex_package_area->second_id = -1;
-        // mutex_package_area->first_id_is_null = 1;
+        for (int i = 0; i < mutex_package_area->balls_per_pack; i++) {
+            mutex_package_area->ball_ids[i] = -1;
+        }
+
         sem_post(&mutex_package_area->mutex);
     }
 
