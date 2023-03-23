@@ -11,7 +11,7 @@
 typedef struct {
     int first_id;
     int second_id;
-    int first_bit_is_null;
+    int first_id_is_null;
     sem_t mutex;
     sem_t second_ball_arrived;
     sem_t result_retrieved;
@@ -23,7 +23,7 @@ void packer_init(void) {
     // Write initialization code here (called once at the start of the program).
     for (int i = 0; i < 3; i++) {
         package_t* mutex_package_area = &mutex_package_areas[i];
-        mutex_package_area->first_bit_is_null = 1;
+        mutex_package_area->first_id_is_null = 1;
         mutex_package_area->first_id = -1; // null
         mutex_package_area->second_id = -1; // null
         sem_init(&mutex_package_area->mutex, 0, 1);
@@ -51,9 +51,9 @@ int pack_ball(int colour, int id) {
     // If 1st ball is null
     // Record down the first ball's ID
     // Wait for the 2nd ball to arrive before returning the 2nd ball's id
-    if (mutex_package_area->first_bit_is_null) {
-        mutex_package_area->first_bit_is_null = 0;
+    if (mutex_package_area->first_id_is_null) {
         sem_wait(&mutex_package_area->mutex);
+        mutex_package_area->first_id_is_null = 0;
         mutex_package_area->first_id = id;
         sem_post(&mutex_package_area->mutex);
         sem_wait(&mutex_package_area->second_ball_arrived);
@@ -73,7 +73,7 @@ int pack_ball(int colour, int id) {
         sem_wait(&mutex_package_area->result_retrieved);
         mutex_package_area->first_id = -1;
         mutex_package_area->second_id = -1;
-        mutex_package_area->first_bit_is_null = 1;
+        mutex_package_area->first_id_is_null = 1;
         sem_post(&mutex_package_area->mutex);
     }
 
