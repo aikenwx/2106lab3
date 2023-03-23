@@ -51,8 +51,10 @@ int pack_ball(int colour, int id) {
     // If 1st ball is null
     // Record down the first ball's ID
     // Wait for the 2nd ball to arrive before returning the 2nd ball's id
+    sem_wait(&mutex_package_area->mutex);
+
+
     if (mutex_package_area->first_id_is_null) {
-        sem_wait(&mutex_package_area->mutex);
         mutex_package_area->first_id_is_null = 0;
         mutex_package_area->first_id = id;
         sem_post(&mutex_package_area->mutex);
@@ -66,7 +68,6 @@ int pack_ball(int colour, int id) {
     // Reset ball_ids[colour_idx] to be {NULL, NULL}
     // Signal that the packing area is free
     // Return the 1st ball's id
-        sem_wait(&mutex_package_area->mutex);
         mutex_package_area->second_id = id;
         sem_post(&mutex_package_area->second_ball_arrived);
         other_id = mutex_package_area->first_id;
