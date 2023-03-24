@@ -22,11 +22,11 @@ typedef struct {
     sem_t result_retrieved;
 } package_t;
 
-package_t mutex_package_areas[N];
+package_t mutex_package_areas[2];
 
 void packer_init(void) {
     // Write initialization code here (called once at the start of the program).
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         package_t* mutex_package_area = &mutex_package_areas[i];
         mutex_package_area->leaders = 0;
         mutex_package_area->followers = 0;
@@ -43,7 +43,7 @@ void packer_init(void) {
 
 void packer_destroy(void) {
     // Write deinitialization code here (called once at the end of the program).
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         package_t* mutex_package_area = &mutex_package_areas[i];
         sem_destroy(&mutex_package_area->mutex);
         sem_destroy(&mutex_package_area->second_ball_arrived);
